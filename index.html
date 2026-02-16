@@ -1,76 +1,17 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Compara+</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f5f7fb;
-    }
-    header {
-      background: #2563eb;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-    }
-    main {
-      padding: 15px;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      cursor: pointer;
-    }
-    .result {
-      margin-top: 15px;
-      background: white;
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-  </style>
-</head>
-<body>
 
-<header>🔎 Compara+</header>
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-<main>
-  <input id="search" placeholder="Digite o produto..."/>
-  <button onclick="buscar()">Buscar melhores preços</button>
-
-  <div id="results"></div>
-</main>
-
-<script>
-function buscar() {
-  const termo = document.getElementById("search").value;
-
-  document.getElementById("results").innerHTML = `
-    <div class="result">🔎 Buscando por: <b>${termo}</b></div>
-    <div class="result">🛒 Mercado Livre — R$ 99,90</div>
-    <div class="result">🟠 Shopee — R$ 97,50</div>
-    <div class="result">🔵 Amazon — R$ 104,90</div>
-  `;
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
 }
-</script>
 
-</body>
-</html>
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
