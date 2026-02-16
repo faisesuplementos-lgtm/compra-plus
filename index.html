@@ -1,161 +1,76 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import Header from './components/Header'
-import ProductCard from './components/ProductCard'
-import { SearchResult, AppStatus, Tab, MarketplaceOption } from './types'
-import { searchProduct } from './services/geminiService'
-
-export default function Page() {
-  const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE)
-  const [results, setResults] = useState<SearchResult | null>(null)
-  const [currentSearch, setCurrentSearch] = useState('')
-  const [activeTab, setActiveTab] = useState<Tab>(Tab.HOME)
-  const [selectedProduct, setSelectedProduct] = useState<MarketplaceOption | null>(null)
-  const [favorites, setFavorites] = useState<MarketplaceOption[]>([])
-
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('compara_plus_favorites')
-    if (savedFavorites) setFavorites(JSON.parse(savedFavorites))
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('compara_plus_favorites', JSON.stringify(favorites))
-  }, [favorites])
-
-  const handleSearch = async (query: string) => {
-    setCurrentSearch(query)
-    setStatus(AppStatus.SEARCHING)
-    setResults(null)
-    setSelectedProduct(null)
-    setActiveTab(Tab.PRICES)
-
-    try {
-      const data = await searchProduct(query)
-      if (data) {
-        setResults(data)
-        setStatus(AppStatus.SUCCESS)
-      } else {
-        setStatus(AppStatus.NOT_FOUND)
-      }
-    } catch (error) {
-      setStatus(AppStatus.ERROR)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compara+</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fb;
     }
-  }
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    main {
+      padding: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
 
-  const formatCurrency = (val: number) => {
-    return val.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-  }
+<header>🔎 Compara+</header>
 
-  return (
-    <div className="min-h-screen bg-[#f1f3f8] pb-32 font-sans text-gray-900">
+<main>
+  <input id="search" placeholder="Digite o produto..."/>
+  <button onclick="buscar()">Buscar melhores preços</button>
 
-      {activeTab === Tab.HOME && !selectedProduct && (
-        <>
-          <Header onSearch={handleSearch} isLoading={status === AppStatus.SEARCHING} />
+  <div id="results"></div>
+</main>
 
-          <main className="max-w-md mx-auto px-6 mt-6">
-            <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-              <h2 className="text-gray-900 font-bold text-lg">
-                Economize com o <span className="text-[#1e4eb8]">Compara+</span>
-              </h2>
-              <p className="text-gray-600 text-xs mt-1">
-                Ache o menor preço em segundos!
-              </p>
-            </div>
+<script>
+function buscar() {
+  const termo = document.getElementById("search").value;
 
-            <div className="space-y-3">
-              <button
-                onClick={() => handleSearch('iPhone 13')}
-                className="bg-white rounded-2xl p-4 w-full text-left shadow-sm"
-              >
-                <h3 className="font-bold text-sm">iPhone 13</h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  A partir de <span className="font-black">R$ 2.799</span>
-                </p>
-              </button>
-
-              <button
-                onClick={() => handleSearch('Fone Bluetooth')}
-                className="bg-white rounded-2xl p-4 w-full text-left shadow-sm"
-              >
-                <h3 className="font-bold text-sm">Fones Bluetooth</h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  A partir de <span className="font-black">R$ 129</span>
-                </p>
-              </button>
-            </div>
-          </main>
-        </>
-      )}
-
-      {activeTab === Tab.PRICES && !selectedProduct && (
-        <main className="max-w-md mx-auto px-6 mt-6">
-          <Header onSearch={handleSearch} isLoading={status === AppStatus.SEARCHING} />
-
-          <div className="mt-6">
-            {status === AppStatus.SEARCHING ? (
-              <div className="py-20 text-center">
-                <p className="text-gray-400 text-sm">Buscando...</p>
-              </div>
-            ) : results ? (
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <ProductCard
-                  option={results.bestOption}
-                  isBest
-                  onClick={() => setSelectedProduct(results.bestOption)}
-                />
-                {results.others.map((opt, i) => (
-                  <ProductCard
-                    key={i}
-                    option={opt}
-                    onClick={() => setSelectedProduct(opt)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <p className="text-gray-400 text-sm">
-                  Nenhum resultado para exibir.
-                </p>
-              </div>
-            )}
-          </div>
-        </main>
-      )}
-
-      {selectedProduct && (
-        <div className="max-w-md mx-auto px-6 mt-8">
-          <button
-            onClick={() => setSelectedProduct(null)}
-            className="mb-6 text-[#1e4eb8] font-bold"
-          >
-            ← Voltar
-          </button>
-
-          <div className="bg-white rounded-3xl p-8 shadow-lg text-center">
-            <h3 className="font-bold text-xl mb-2">
-              {selectedProduct.productName}
-            </h3>
-
-            <p className="text-2xl font-black text-[#1e4eb8] mb-6">
-              {formatCurrency(selectedProduct.finalPrice)}
-            </p>
-
-            <a
-              href={selectedProduct.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full bg-[#1e4eb8] text-white py-4 rounded-xl font-bold uppercase"
-            >
-              Ver na Loja
-            </a>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+  document.getElementById("results").innerHTML = `
+    <div class="result">🔎 Buscando por: <b>${termo}</b></div>
+    <div class="result">🛒 Mercado Livre — R$ 99,90</div>
+    <div class="result">🟠 Shopee — R$ 97,50</div>
+    <div class="result">🔵 Amazon — R$ 104,90</div>
+  `;
 }
+</script>
+
+</body>
+</html>
